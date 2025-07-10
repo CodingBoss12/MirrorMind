@@ -1,44 +1,89 @@
-const moodKeywords = {
-  happy: ["happy", "excited", "proud", "joy", "accomplished"],
-  sad: ["sad", "down", "depressed", "cry", "lonely"],
-  anxious: ["nervous", "anxious", "worried", "stressed", "tense"],
-  angry: ["mad", "angry", "furious", "annoyed", "irritated"],
-  tired: ["tired", "exhausted", "burnt out", "drained", "fatigued"]
-};
+function analyze() {
+  const text = document.getElementById('entry').value.toLowerCase();
+  const responseDiv = document.getElementById('responseOutput');
 
-const rewiringTips = {
-  happy: "Reflect on what made you feel good and try to reinforce it tomorrow!",
-  sad: "Write 3 things you're grateful for. Even tiny ones help anchor you.",
-  anxious: "Try a 4-7-8 breathing cycle or make a plan to handle what’s stressing you.",
-  angry: "Take a short walk or write down why you feel angry without judging it.",
-  tired: "Drink water, close your eyes for 5 minutes, and stretch a little — it counts."
-};
+  const patterns = [
+    {
+      triggers: ["i don't know", "lost", "confused", "i'm unsure", "uncertain"],
+      mood: "confused",
+      response: "🌫️ You’re in a fog right now — that’s okay. You don’t need clarity yet, just presence. What’s *one* small thing you do know today?"
+    },
+    {
+      triggers: ["i should", "but i", "i feel guilty", "i'm failing"],
+      mood: "guilt spiral",
+      response: "🌀 Sounds like you’re carrying guilt. Can you forgive yourself for being human today?"
+    },
+    {
+      triggers: ["it's whatever", "i'm fine", "idc", "don’t care"],
+      mood: "emotional shutdown",
+      response: "🧊 That sounds like masking. Try asking yourself: what emotion would you express if it were safe?"
+    },
+    {
+      triggers: ["angry", "mad", "furious", "rage"],
+      mood: "anger",
+      response: "🔥 That anger is trying to protect you. Ask yourself: what boundary was crossed, and how can you reclaim it?"
+    },
+    {
+      triggers: ["anxious", "worried", "nervous", "panicked", "stressed"],
+      mood: "anxiety",
+      response: "🫨 Anxiety is your brain’s smoke alarm — not always a fire. What’s a concrete step you can take *right now*?"
+    },
+    {
+      triggers: ["tired", "exhausted", "burnt out", "drained", "fatigued"],
+      mood: "burnout",
+      response: "😴 Burnout isn’t weakness. You weren’t built to run endlessly. Your rest is *productive* too."
+    },
+    {
+      triggers: ["sad", "lonely", "empty", "crying", "depressed"],
+      mood: "sadness",
+      response: "🌧️ You’re feeling a heaviness. That’s valid. Can you hold space for it without judging it?"
+    }
+  ];
 
-function analyzeEntry() {
-  const text = document.getElementById("entry").value.toLowerCase();
-  let foundEmotions = [];
+  let matched = null;
 
-  for (let emotion in moodKeywords) {
-    for (let word of moodKeywords[emotion]) {
+  for (let pattern of patterns) {
+    for (let word of pattern.triggers) {
       if (text.includes(word)) {
-        foundEmotions.push(emotion);
+        matched = pattern;
         break;
       }
     }
+    if (matched) break;
   }
 
-  const uniqueEmotions = [...new Set(foundEmotions)];
-  let outputDiv = document.getElementById("analysisOutput");
-  let responseDiv = document.getElementById("responseOutput");
+  if (matched) {
+    responseDiv.innerHTML = `<p><strong>MirrorMind:</strong> ${matched.response}</p>`;
+  } else {
+    responseDiv.innerHTML = `<p><strong>MirrorMind:</strong> ✨ I’m still learning from your words. Try expressing your emotions in raw terms, and I’ll reflect it back to you.</p>`;
+  }
+}
 
-  if (uniqueEmotions.length === 0) {
-    outputDiv.innerHTML = "🤔 No emotions detected. Try describing your mood more deeply!";
-    responseDiv.innerHTML = "";
-    return;
+let patterns = [];
+
+fetch("patterns.json")
+  .then(res => res.json())
+  .then(data => patterns = data);
+
+function analyze() {
+  const text = document.getElementById('entry').value.toLowerCase();
+  const responseDiv = document.getElementById('responseOutput');
+
+  let matched = null;
+
+  for (let pattern of patterns) {
+    for (let clue of pattern.clues) {
+      if (text.includes(clue)) {
+        matched = pattern;
+        break;
+      }
+    }
+    if (matched) break;
   }
 
-  outputDiv.innerHTML = "💡 Detected emotions: <strong>" + uniqueEmotions.join(", ") + "</strong>";
-
-  let adviceList = uniqueEmotions.map(emotion => `<p><strong>${emotion.toUpperCase()} tip:</strong> ${rewiringTips[emotion]}</p>`);
-  responseDiv.innerHTML = adviceList.join("");
+  if (matched) {
+    responseDiv.innerHTML = `<p><strong>MirrorMind:</strong> ${matched.response}</p>`;
+  } else {
+    responseDiv.innerHTML = `<p><strong>MirrorMind:</strong> 🤖 I’m still processing what you shared. Could you try expressing it a bit more openly?</p>`;
+  }
 }
